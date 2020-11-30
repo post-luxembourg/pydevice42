@@ -30,3 +30,5 @@ Without direnv:
 source .envrc
 poetry run ipython -i hacking.ipy
 ```
+
+Now you can play with the `client` object.
