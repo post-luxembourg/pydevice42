@@ -13,6 +13,7 @@ Setup credentials using [direnv](https://direnv.net/):
 ```shell
 cp .envrc.sample .envrc
 vim .envrc
+direnv allow
 ```
 
 ## Hack
