@@ -87,4 +87,4 @@ jobs:
 
       - name: mypy check
         run: |
-          poetry run python -m mypy --strict --no-color-output .
+          poetry run python -m mypy --no-color-output .
