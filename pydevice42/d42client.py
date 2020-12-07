@@ -1,5 +1,6 @@
 import json as js
 import typing as t
+from itertools import chain
 
 import requests
 
@@ -9,17 +10,9 @@ from .basicrestclient import BasicRestClient
 from .logger import LOGGER
 
 
-def extract_data(data: t.Dict) -> t.Any:
+def extract_data(data: t.Dict[str, t.Any]) -> t.Any:
     metadata_keys = ["offset", "total_count", "limit"]
-    return data.get([k for k in list(data.keys()) if k not in metadata_keys][0])
-
-
-def flatten(t: t.List) -> t.List:
-    flat_list = []
-    for sublist in t:
-        for item in sublist:
-            flat_list.append(item)
-    return flat_list
+    return data.get([k for k in data.keys() if k not in metadata_keys][0])
 
 
 class D42Client(BasicRestClient):
@@ -122,7 +115,11 @@ class D42Client(BasicRestClient):
     def _flattened_paginated_request(
         self, *args: t.Any, **kwargs: t.Any
     ) -> t.Iterable[tt.JSON_Res]:
-        return flatten(t.cast(t.List, self._paginated_request(*args, **kwargs)))
+        return chain.from_iterable(
+            t.cast(
+                t.List[tt.JSON_Res], self._paginated_request(*args, **kwargs)
+            )
+        )
 
     def post_network(self, new_subnet: tt.SubnetBase) -> tt.JSON_Res:
         return self._request(
