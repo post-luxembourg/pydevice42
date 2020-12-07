@@ -11,8 +11,23 @@ from .logger import LOGGER
 
 
 def extract_data(data: t.Dict[str, t.Any]) -> t.Any:
+    """
+    When using Device42's pagination functions the return json always
+    looks like so:
+
+    ```json
+    {
+        "limit": INT,
+        "offset": INT,
+        "thing_we_care_about": (...),
+        "total_count": INT
+    }
+    ```
+
+    This function simply returns the first non-meta field.
+    """
     metadata_keys = ["offset", "total_count", "limit"]
-    return data.get([k for k in data.keys() if k not in metadata_keys][0])
+    return data.get(next((k for k in data.keys() if k not in metadata_keys)))
 
 
 class D42Client(BasicRestClient):
