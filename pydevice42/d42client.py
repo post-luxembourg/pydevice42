@@ -143,7 +143,7 @@ class D42Client(BasicRestClient):
             data=t.cast(t.Dict[str, t.Any], new_subnet),
         )
 
-    def _get_DOQL_query(self, query_name: str) -> t.Any:
+    def get_DOQL_query(self, query_name: str) -> t.Any:
         """
         DOQL queries are custom usermade queries that talk directly to
         the database and (generally) return a JSON.
@@ -159,19 +159,6 @@ class D42Client(BasicRestClient):
                 "header": "yes",
                 "output_type": "json",
             },
-        )
-
-    def get_custom_fields_of_service_instances(
-        self, save_to_file: bool = False
-    ) -> t.List[tt.ServiceInstanceCustomField]:
-        """
-        Requires that you've setup a DOQL custom query
-
-        Yes it sucks, but I honestly haven't found a better way :(
-        """
-        return t.cast(
-            t.List[tt.ServiceInstanceCustomField],
-            self._get_DOQL_query("get_service_instance_custom_fields"),
         )
 
     def update_custom_field(
