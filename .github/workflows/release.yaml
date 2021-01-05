@@ -1,14 +1,53 @@
-name: PyPI release
+name: New release
 
 on:
-  release:
-    types: [created]
-  # push:
-  #   tags:
-  #     - 'v*'
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  release:
+  github_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    # outputs:
+    #   upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get changelog
+        id: get_changelog
+        run: |
+          current_tag="$(git describe --tags --abbrev=0)"
+          previous_tag="$(git describe --abbrev=0 "${current_tag}^")"
+          changelog="$(git log --pretty=format:"%h %s" "${previous_tag}"..HEAD)"
+          echo -e "Prev tag:\n${previous_tag}\nChangelog:\n${changelog}" >&2
+          echo "::set-output name=changelog::${changelog}"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+          body: ${{ steps.get_changelog.outputs.changelog }}
+
+      # - name: Delete release if anything goes wrong.
+      #   if: ${{ failure() }}
+      #   uses: author/action-rollback@master
+      #   with:
+      #     release_id: ${{ steps.create_release.id }}
+      #     tag: ${{ github.ref }}
+      #     always_delete_tag: true
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pypi_release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
