@@ -1,4 +1,5 @@
 import typing as t
+from ipaddress import IPv4Address, IPv6Address
 
 # Representing JSON is notoriously tricky in mypy
 # Here's the best attempt I have so far
@@ -45,10 +46,51 @@ class Subnet(SubnetBase, total=False):
     notes: str
 
 
+class IPAddressBase(t.TypedDict):
+    """
+    Only real attribute we need is a valid ipaddress
+    The request method then handles converting it into an
+    str
+    """
+
+    ipaddress: t.Union[IPv4Address, IPv6Address]
+
+
+class IPAddress(SubnetBase, total=False):
+    label: str
+    subnet: str
+    macaddress: str
+    device: str
+    type: t.Literal["static", "dhcp", "reserved"]
+    vrf_group_id: str
+    vrf_group: str
+    available: t.Literal["yes", "no"]
+    clear_all: t.Literal["yes", "no"]
+    tags: str
+
+
 class StorageServiceInstance(t.TypedDict):
     service_name: t.Literal["storage_service"]
-    # id that points over to a Clustered Device that houses our LUNS!
     device_id: int
+
+
+class AppComponentBase(t.TypedDict):
+    name: str
+
+
+class AppComponent(AppComponentBase, total=False):
+    device: str
+    group_owner: str
+    # According to the manual:
+    # Description of business impact due to loss of component.
+    what: str
+    depends_on: str
+    # Comma separated list
+    dependents: str
+    device_reason: str
+    # list of string pairs for dependent appcomps on this appcomp e.g.
+    # depend_appcomp_name1:reason1, depend_appcomp_name2:reason2
+    depends_on_reasons: str
 
 
 class CustomFieldBase(t.TypedDict):
