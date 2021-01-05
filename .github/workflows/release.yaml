@@ -7,7 +7,7 @@ on:
 
 jobs:
   github_release:
-    name: Create release
+    name: Create GitHub release
     runs-on: ubuntu-latest
     # outputs:
     #   upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -48,6 +48,7 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   pypi_release:
+    name: Create PyPi release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
