@@ -100,6 +100,7 @@ class D42Client(BasicRestClient):
             )
 
         request_num = 1
+
         params = {} if params is None else params
         params["limit"] = limit
         params["offset"] = 0
@@ -141,6 +142,22 @@ class D42Client(BasicRestClient):
             endpoint="/api/1.0/subnets/",
             method="POST",
             data=t.cast(t.Dict[str, t.Any], new_subnet),
+        )
+
+    def post_ip(self, new_ip: tt.IPAddressBase) -> tt.JSON_Res:
+        return self._request(
+            endpoint="/api/1.0/ips/",
+            method="POST",
+            data=t.cast(t.Dict[str, t.Any], new_ip),
+        )
+
+    def post_app_component(
+        self, new_component: tt.AppComponentBase
+    ) -> tt.JSON_Res:
+        return self._request(
+            endpoint="/api/1.0/appcomps/",
+            method="POST",
+            data=t.cast(t.Dict[str, t.Any], new_component),
         )
 
     def get_DOQL_query(self, query_name: str) -> t.Any:
@@ -202,6 +219,7 @@ class D42Client(BasicRestClient):
         (0, 'custom key pair values added or updated ...')
         ```
         """
+
         return self._request(
             method="PUT",
             endpoint=f"/api/1.0/custom_fields/{endpoint}/",
