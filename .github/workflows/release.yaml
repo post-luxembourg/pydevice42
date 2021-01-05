@@ -23,6 +23,10 @@ jobs:
           previous_tag="$(git describe --abbrev=0 "${current_tag}^")"
           changelog="$(git log --pretty=format:"%h %s" "${previous_tag}"..HEAD)"
           echo -e "Prev tag:\n${previous_tag}\nChangelog:\n${changelog}" >&2
+          # https://github.com/actions/toolkit/issues/403
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
           echo "::set-output name=changelog::${changelog}"
 
       - name: Create Release
