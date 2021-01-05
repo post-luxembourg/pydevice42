@@ -143,7 +143,7 @@ class D42Client(BasicRestClient):
             data=t.cast(t.Dict[str, t.Any], new_subnet),
         )
 
-    def _get_DOQL_query(self, query_name: str) -> t.Any:
+    def get_DOQL_query(self, query_name: str) -> t.Any:
         """
         DOQL queries are custom usermade queries that talk directly to
         the database and (generally) return a JSON.
@@ -161,23 +161,13 @@ class D42Client(BasicRestClient):
             },
         )
 
-    def get_custom_fields_of_service_instances(
-        self, save_to_file: bool = False
-    ) -> t.List[tt.ServiceInstanceCustomField]:
-        """
-        Requires that you've setup a DOQL custom query
-
-        Yes it sucks, but I honestly haven't found a better way :(
-        """
-        return t.cast(
-            t.List[tt.ServiceInstanceCustomField],
-            self._get_DOQL_query("get_service_instance_custom_fields"),
-        )
-
-    def update_custom_field_service_instance(
-        self, cf: tt.CustomFieldBase
+    def update_custom_field(
+        self, cf: tt.CustomFieldBase, endpoint: str
     ) -> tt.JSON_Res:
-        """Note that CustomFieldBase's `value` is a string!
+        """
+        Update a custom field for a given d42 object.
+
+        Note that a CustomFieldBase's `value` is a string!
 
         This means that if you're inputting a json as a custom field
         you should cast it with `json.dumps`
@@ -186,33 +176,35 @@ class D42Client(BasicRestClient):
 
         ```python
         >>> client = D42Client(user, password, host)
-        >>> client.update_custom_field_service_instance(
+        >>> client.update_custom_field(
         ...             {
         ...                 "id": 12,
         ...                 "key": "custom_data",
         ...                 "value": {
         ...                     "Testing": "I was sent from the API"
         ...                 },
-        ...             }
+        ...             },
+        ...             "serviceinstance"
         ...         )
         Traceback (most recent call last):
         ...
         requests.exceptions.RequestException: <Response [500]>
-        >>> client.update_custom_field_service_instance(
+        >>> client.update_custom_field(
         ...             {
         ...                 "id": 12,
         ...                 "key": "custom_data",
         ...                 "value": dumps({
         ...                     "Testing": "I was sent from the API"
         ...                 }),
-        ...             }
+        ...             },
+        ...             "serviceinstance"
         ...         )
         (0, 'custom key pair values added or updated ...')
         ```
         """
         return self._request(
             method="PUT",
-            endpoint="/api/1.0/custom_fields/serviceinstance/",
+            endpoint=f"/api/1.0/custom_fields/{endpoint}/",
             data=t.cast(t.Dict[str, t.Any], cf),
         )
 
