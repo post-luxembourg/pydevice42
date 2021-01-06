@@ -56,7 +56,7 @@ class IPAddressBase(t.TypedDict):
     ipaddress: t.Union[IPv4Address, IPv6Address]
 
 
-class IPAddress(SubnetBase, total=False):
+class IPAddress(IPAddressBase, total=False):
     label: str
     subnet: str
     macaddress: str
