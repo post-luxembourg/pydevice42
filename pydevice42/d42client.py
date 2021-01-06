@@ -137,23 +137,21 @@ class D42Client(BasicRestClient):
             )
         )
 
-    def post_network(self, new_subnet: tt.SubnetBase) -> tt.JSON_Res:
+    def post_network(self, new_subnet: tt.Subnet) -> tt.JSON_Res:
         return self._request(
             endpoint="/api/1.0/subnets/",
             method="POST",
             data=t.cast(t.Dict[str, t.Any], new_subnet),
         )
 
-    def post_ip(self, new_ip: tt.IPAddressBase) -> tt.JSON_Res:
+    def post_ip(self, new_ip: tt.IPAddress) -> tt.JSON_Res:
         return self._request(
             endpoint="/api/1.0/ips/",
             method="POST",
             data=t.cast(t.Dict[str, t.Any], new_ip),
         )
 
-    def post_app_component(
-        self, new_component: tt.AppComponentBase
-    ) -> tt.JSON_Res:
+    def post_app_component(self, new_component: tt.AppComponent) -> tt.JSON_Res:
         return self._request(
             endpoint="/api/1.0/appcomps/",
             method="POST",
