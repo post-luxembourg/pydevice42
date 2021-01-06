@@ -151,9 +151,7 @@ class D42Client(BasicRestClient):
             data=t.cast(t.Dict[str, t.Any], new_ip),
         )
 
-    def post_app_component(
-        self, new_component: tt.AppComponent
-    ) -> tt.JSON_Res:
+    def post_app_component(self, new_component: tt.AppComponent) -> tt.JSON_Res:
         return self._request(
             endpoint="/api/1.0/appcomps/",
             method="POST",
