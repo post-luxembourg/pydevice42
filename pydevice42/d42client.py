@@ -240,7 +240,7 @@ class D42Client(BasicRestClient):
         [this](https://github.com/python/mypy/issues/4976).
 
         `TypedDicts` aren't an acceptable generic dict, because of invariance
-        [nonsese](http://mypy.readthedocs.io/en/latest/common_issues.html#invariance-vs-covariance)
+        [nonsense](http://mypy.readthedocs.io/en/latest/common_issues.html#invariance-vs-covariance)
         and `JSON_VALUES` can't be mapped to our `TypedDicts`, because of
         `Literals`
         """
