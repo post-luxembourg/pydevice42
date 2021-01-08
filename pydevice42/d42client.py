@@ -224,17 +224,14 @@ class D42Client(BasicRestClient):
             data=t.cast(t.Dict[str, t.Any], cf),
         )
 
-    def get_all_devices(self) -> tt.JSON_Res:
-        return self._request(
-            method="GET",
-            endpoint="/api/1.0/devices/all/",
-        ).get("Devices")
+    def get_all_devices(self) -> t.Iterable[tt.JSON_Res]:
+        return self._flattened_paginated_request("/api/1.0/devices/")
 
-    def get_all_service_instances(self) -> tt.JSON_Res:
+    def get_all_service_instances(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/2.0/service_instances/")
 
-    def get_all_application_components(self) -> tt.JSON_Res:
+    def get_all_application_components(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/2.0/appcomps/")
 
-    def get_all_operating_systems(self) -> tt.JSON_Res:
+    def get_all_operating_systems(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/1.0/operatingsystems/")
