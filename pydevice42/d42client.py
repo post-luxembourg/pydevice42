@@ -137,27 +137,6 @@ class D42Client(BasicRestClient):
             )
         )
 
-    def post_network(self, new_subnet: tt.Subnet) -> tt.JSON_Res:
-        return self._request(
-            endpoint="/api/1.0/subnets/",
-            method="POST",
-            data=t.cast(t.Dict[str, t.Any], new_subnet),
-        )
-
-    def post_ip(self, new_ip: tt.IPAddress) -> tt.JSON_Res:
-        return self._request(
-            endpoint="/api/1.0/ips/",
-            method="POST",
-            data=t.cast(t.Dict[str, t.Any], new_ip),
-        )
-
-    def post_app_component(self, new_component: tt.AppComponent) -> tt.JSON_Res:
-        return self._request(
-            endpoint="/api/1.0/appcomps/",
-            method="POST",
-            data=t.cast(t.Dict[str, t.Any], new_component),
-        )
-
     def get_DOQL_query(self, query_name: str) -> t.Any:
         """
         DOQL queries are custom usermade queries that talk directly to
@@ -238,3 +217,50 @@ class D42Client(BasicRestClient):
 
     def get_all_operating_systems(self) -> tt.JSON_Res:
         return self._flattened_paginated_request("/api/1.0/operatingsystems/")
+
+    ###########################################################################
+    #                                                                         #
+    #                              POST methods                               #
+    #                                                                         #
+    ###########################################################################
+
+    def _post_object(
+        self, new_obj: t.Mapping[str, t.Any], endpoint: str
+    ) -> tt.JSON_Res:
+        """
+        Generic POST.
+
+        The only thing that we really care about is the `Mapping[str, Any]`.
+        Strictly speaking, the mapping _should_ be:
+
+        `Dict[str, JSON_VALUES]`
+        where `JSON_Values = Union[str, int, float, bool, None]`
+
+        But **of course**, mypy complains about
+        [this](https://github.com/python/mypy/issues/4976).
+
+        `TypedDicts` aren't an acceptable generic dict, because of invariance
+        [nonsese](http://mypy.readthedocs.io/en/latest/common_issues.html#invariance-vs-covariance)
+        and `JSON_VALUES` can't be mapped to our `TypedDicts`, because of
+        `Literals`
+        """
+        return self._request(
+            endpoint=f"/api/1.0/{endpoint}/",
+            method="POST",
+            data=t.cast(t.Dict[str, t.Any], new_obj),
+        )
+
+    def post_network(self, new_subnet: tt.Subnet) -> tt.JSON_Res:
+        return self._post_object(new_subnet, "subnets")
+
+    def post_ip(self, new_ip: tt.IPAddress) -> tt.JSON_Res:
+        return self._post_object(new_ip, "ips")
+
+    def post_app_component(
+        self,
+        new_component: tt.AppComponent,
+    ) -> tt.JSON_Res:
+        return self._post_object(new_component, "appcomps")
+
+    def post_customer(self, new_customer: tt.Customer) -> tt.JSON_Res:
+        return self._post_object(new_customer, "customers")

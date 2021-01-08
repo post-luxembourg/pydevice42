@@ -125,3 +125,31 @@ class ServiceInstanceCustomField(CustomFieldBase, total=False):
     log_for_api: bool
     is_multi: bool
     notes: str
+
+
+class CustomerBase(t.TypedDict):
+    name: str
+
+
+class Customer(CustomerBase, total=False):
+    contact_info: str
+    notes: str
+    type: t.Literal["customer", "department"]
+    # Used for renaming customers.
+    new_name: str
+    """
+    From the docs:
+
+    ```
+    If multitenancy is on,
+    admin groups that have access to this object are specified here.
+
+    e.g. "Prod_East:no,Corp:yes "
+
+    Specifies that the admin groups for this object are Prod_East with view
+    only permission and Corp with change permission.
+
+    If this parameter is present with no value, all groups are deleted.
+    ```
+    """
+    groups: str
