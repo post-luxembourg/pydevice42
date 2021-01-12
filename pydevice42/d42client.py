@@ -210,7 +210,7 @@ class D42Client(BasicRestClient):
         return self._flattened_paginated_request("/api/2.0/service_instances/")
 
     def get_all_application_components(self) -> t.Iterable[tt.JSON_Res]:
-        return self._flattened_paginated_request("/api/2.0/appcomps/")
+        return self._flattened_paginated_request("/api/1.0/appcomps/")
 
     def get_all_operating_systems(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/1.0/operatingsystems/")
