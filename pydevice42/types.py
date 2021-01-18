@@ -18,9 +18,41 @@ JSON_List = t.List[JSON_Dict]
 
 JSON_Res = t.Any
 
-HTTP_METHODS = t.Literal["GET", "POST", "PUT"]
+HTTP_METHODS = t.Literal["GET", "POST", "PUT", "DELETE"]
 STATUS = t.Literal["USED", "UNUSED"]
 T = t.TypeVar("T")
+
+
+class DeleteRes(t.TypedDict):
+    """
+    Response we get from Device42 whenever we attempt to delete na object
+    """
+
+    deleted: bool
+    id: int
+
+
+class PostRes(t.NamedTuple):
+    """
+    Base Response we get from Device42 whenever we attempt to post an object
+
+    The message will contain either of the following strings:
+
+    `<Name Of object> added or updated`
+    or
+    `<Name Of object> added/updated`
+
+    The id is a simple int that signifies how the object is identified in the
+    database, whereas the identifier is how _we_ identify the object.
+
+    Some post methods (not all) include these two final booleans.
+    """
+
+    message: str
+    id: int
+    identifier: t.Any
+    created: t.Optional[bool] = None
+    updated: t.Optional[bool] = None
 
 
 def int_cast(i: t.Any) -> int:
@@ -153,3 +185,47 @@ class Customer(CustomerBase, total=False):
     ```
     """
     groups: str
+
+
+class BuildingBase(t.TypedDict):
+    name: str
+    address: str
+
+
+class Building(BuildingBase, total=False):
+    contact_name: str
+    contact_phone: str
+    notes: str
+    groups: str
+    longitude: str
+    latitude: str
+    building_id: int
+
+
+class RoomBase(t.TypedDict):
+    name: str
+
+
+class Room(RoomBase, total=False):
+    contact_name: str
+    contact_phone: str
+    notes: str
+    groups: str
+    longitude: str
+    latitude: str
+    building_id: int
+    # default to numeric
+    horizontal_grid_numbering: t.Literal["numeric", "alphabetic"]
+    vertical_grid_numbering: t.Literal["numeric", "alphabetic"]
+    horizontal_grid_start: str
+    vertical_grid_start: str
+    # unit of measurement (meters or inches)
+    uom: t.Literal["m", "in"]
+    height: str
+    grid_rows: str
+    grid_cols: str
+    raised_floor: t.Literal["yes", "no"]
+    raised_floor_height: str
+    reverse_xaxis: t.Literal["yes", "no"]
+    reverse_yaxis: t.Literal["yes", "no"]
+    room_id: int

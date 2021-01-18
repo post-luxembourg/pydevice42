@@ -137,6 +137,52 @@ class D42Client(BasicRestClient):
             )
         )
 
+    def _post_object(
+        self,
+        new_obj: t.Mapping[str, t.Any],
+        endpoint: str,
+        api_version: str = "1.0",
+    ) -> tt.PostRes:
+        """
+        Generic POST.
+
+        The only thing that we really care about is the `Mapping[str, Any]`.
+        Strictly speaking, the mapping _should_ be:
+
+        `Dict[str, JSON_VALUES]`
+        where `JSON_Values = Union[str, int, float, bool, None]`
+
+        But **of course**, mypy complains about
+        [this](https://github.com/python/mypy/issues/4976).
+
+        `TypedDicts` aren't an acceptable generic dict, because of invariance
+        [nonsense](http://mypy.readthedocs.io/en/latest/common_issues.html#invariance-vs-covariance)
+        and `JSON_VALUES` can't be mapped to our `TypedDicts`, because of
+        `Literals`
+        """
+
+        return tt.PostRes(
+            *self._request(
+                endpoint=f"/api/{api_version}/{endpoint}/",
+                method="POST",
+                data=t.cast(t.Dict[str, t.Any], new_obj),
+            )
+        )
+
+    def _delete_object(
+        self, endpoint: str, id: int, api_version: str = "1.0"
+    ) -> tt.DeleteRes:
+        """
+        Generic DELETE
+        """
+        return t.cast(
+            tt.DeleteRes,
+            self._request(
+                endpoint=f"/api/{api_version}/{endpoint}/{id}",
+                method="DELETE",
+            ),
+        )
+
     def get_DOQL_query(self, query_name: str) -> t.Any:
         """
         DOQL queries are custom usermade queries that talk directly to
@@ -203,6 +249,46 @@ class D42Client(BasicRestClient):
             data=t.cast(t.Dict[str, t.Any], cf),
         )
 
+    ###########################################################################
+    #                                BUILDINGS                                #
+    ###########################################################################
+
+    def get_buildings(self, name: t.Optional[str]) -> t.Iterable[tt.Building]:
+        return self._flattened_paginated_request(
+            endpoint="/api/1.0/buildings/", params={"name": name}
+        )
+
+    def post_building(self, building: tt.Building) -> tt.PostRes:
+        return self._post_object(building, "buildings")
+
+    def delete_building(self, id: int) -> tt.DeleteRes:
+        return self._delete_object(endpoint="buildings", id=id)
+
+    ###########################################################################
+    #                                  ROOMS                                  #
+    ###########################################################################
+
+    def get_rooms(
+        self,
+        name: t.Optional[str],
+        building_id: t.Optional[str],
+        building: t.Optional[str],
+    ) -> t.Iterable[tt.Room]:
+        return self._flattened_paginated_request(
+            endpoint="/api/1.0/rooms/",
+            params={
+                "name": name,
+                "building_id": building_id,
+                "building": building,
+            },
+        )
+
+    def post_room(self, room: tt.Room) -> tt.PostRes:
+        return self._post_object(room, "rooms")
+
+    def delete_room(self, id: int) -> tt.DeleteRes:
+        return self._delete_object(endpoint="rooms", id=id)
+
     def get_all_devices(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/1.0/devices/")
 
@@ -214,38 +300,6 @@ class D42Client(BasicRestClient):
 
     def get_all_operating_systems(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/1.0/operatingsystems/")
-
-    ###########################################################################
-    #                                                                         #
-    #                              POST methods                               #
-    #                                                                         #
-    ###########################################################################
-
-    def _post_object(
-        self, new_obj: t.Mapping[str, t.Any], endpoint: str
-    ) -> tt.JSON_Res:
-        """
-        Generic POST.
-
-        The only thing that we really care about is the `Mapping[str, Any]`.
-        Strictly speaking, the mapping _should_ be:
-
-        `Dict[str, JSON_VALUES]`
-        where `JSON_Values = Union[str, int, float, bool, None]`
-
-        But **of course**, mypy complains about
-        [this](https://github.com/python/mypy/issues/4976).
-
-        `TypedDicts` aren't an acceptable generic dict, because of invariance
-        [nonsense](http://mypy.readthedocs.io/en/latest/common_issues.html#invariance-vs-covariance)
-        and `JSON_VALUES` can't be mapped to our `TypedDicts`, because of
-        `Literals`
-        """
-        return self._request(
-            endpoint=f"/api/1.0/{endpoint}/",
-            method="POST",
-            data=t.cast(t.Dict[str, t.Any], new_obj),
-        )
 
     def post_network(self, new_subnet: tt.Subnet) -> tt.JSON_Res:
         return self._post_object(new_subnet, "subnets")
