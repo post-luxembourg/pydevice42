@@ -22,6 +22,8 @@ HTTP_METHODS = t.Literal["GET", "POST", "PUT", "DELETE"]
 STATUS = t.Literal["USED", "UNUSED"]
 T = t.TypeVar("T")
 
+YES_NO = t.Literal["yes", "no"]
+
 
 class DeleteRes(t.TypedDict):
     """
@@ -96,8 +98,8 @@ class IPAddress(IPAddressBase, total=False):
     type: t.Literal["static", "dhcp", "reserved"]
     vrf_group_id: str
     vrf_group: str
-    available: t.Literal["yes", "no"]
-    clear_all: t.Literal["yes", "no"]
+    available: YES_NO
+    clear_all: YES_NO
     tags: str
 
 
@@ -224,8 +226,113 @@ class Room(RoomBase, total=False):
     height: str
     grid_rows: str
     grid_cols: str
-    raised_floor: t.Literal["yes", "no"]
+    raised_floor: YES_NO
     raised_floor_height: str
-    reverse_xaxis: t.Literal["yes", "no"]
-    reverse_yaxis: t.Literal["yes", "no"]
+    reverse_xaxis: YES_NO
+    reverse_yaxis: YES_NO
     room_id: int
+
+
+class _Rack(t.TypedDict, total=False):
+    building_id: t.Optional[str]
+    building: t.Optional[str]
+    room: t.Optional[str]
+    room_id: t.Optional[str]
+    row: t.Optional[str]
+    asset_no: t.Optional[str]
+    manufacturer: t.Optional[str]
+
+
+class RackGet(_Rack, total=False):
+    name: t.Optional[str]
+    size: t.Optional[str]
+
+
+class RackBase(t.TypedDict):
+    name: str
+    size: int
+
+
+class Rack(RackBase, _Rack, total=False):
+    new_name: str
+    numbering_start_from_bottom: YES_NO
+    first_number: str
+    notes: str
+    start_row: str
+    start_col: str
+    row_size: str
+    col_size: str
+    orientation: t.Literal["left", "right", "up", "down"]
+    groups: str
+
+
+class DeviceGet(t.TypedDict, total=False):
+    type: str
+    device_sub_type: str
+    device_sub_type_id: str
+    service_level: str
+    in_service: str
+    customer: str
+    tags: str
+    blade_host_name: str
+    virtual_host_name: str
+    building_id: str
+    building: str
+    room_id: str
+    room: str
+    rack_id: str
+    rack: str
+    serial_no: str
+    serial_no_contains: str
+    object_category: str
+    object_category_id: str
+    asset_no: str
+    name: str
+    tags_and: str
+    uuid: str
+    is_it_switch: YES_NO
+    is_it_virtual_host: YES_NO
+    is_it_blade_host: YES_NO
+    hardware: str
+    hardware_ids: str
+    os: str
+    virtual_subtype: str
+    last_updated_lt: str
+    last_updated_gt: str
+    first_added_lt: str
+    first_added_gt: str
+    custom_fields_and: str
+    custom_fields_or: str
+
+
+class Device(t.TypedDict, DeviceGet, total=False):
+    virtual_host: str
+    blade_host: str
+    slot_no: str
+    storage_room_id: str
+    storage_room: str
+    osver: str
+    osarch: str
+    osverno: str
+    memory: str
+    cpucount: str
+    cpupower: str
+    cpucore: str
+    hddcount: str
+    hddsize: str
+    hddraid: str
+    hddraid_type: str
+    macaddress: str
+    devices_in_cluster: str
+    appcomps: str
+    contract_id: str
+    contract: str
+    aliases: str
+    subtype: str
+    blade_host_clear: str
+    notes: str
+    virtual_host_clear: str
+    tags_remove: str
+    aliases_remove: str
+    devices_in_cluster_remove: str
+    new_object_category: str
