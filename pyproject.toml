@@ -21,7 +21,7 @@ curlify = "^2.2.1"
 flakehell = "^0.9.0"
 ipython = "^7.19.0"
 isort = "^5.7.0"
-mypy = "^0.790"
+mypy = "^0.800"
 mypy-extensions = "^0.4.3"
 
 [tool.black]
