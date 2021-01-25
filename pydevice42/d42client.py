@@ -85,7 +85,7 @@ class D42Client(BasicRestClient):
         params: t.Optional[t.Dict[str, t.Any]] = None,
         json: t.Optional[t.Dict[str, t.Any]] = None,
         data: t.Optional[t.Dict[str, t.Any]] = None,
-        limit: int = 4,
+        limit: int = 50,
     ) -> t.Iterable[tt.JSON_Res]:
         def page_request(new_params: t.Dict[str, t.Any]) -> tt.JSON_Dict:
             return t.cast(
@@ -353,7 +353,9 @@ class D42Client(BasicRestClient):
             "/api/1.0/devices/", params=kwargs
         )
 
-    def get_all_devices(self, include_cols: str) -> t.Iterable[tt.Device]:
+    def get_all_devices(
+        self, include_cols: t.Optional[str] = None
+    ) -> t.Iterable[tt.Device]:
         """
         Apparently, get _all_ devices is a little more detailed than just
         devices. Who knew.
