@@ -85,7 +85,7 @@ class D42Client(BasicRestClient):
         params: t.Optional[t.Dict[str, t.Any]] = None,
         json: t.Optional[t.Dict[str, t.Any]] = None,
         data: t.Optional[t.Dict[str, t.Any]] = None,
-        limit: int = 4,
+        limit: int = 50,
     ) -> t.Iterable[tt.JSON_Res]:
         def page_request(new_params: t.Dict[str, t.Any]) -> tt.JSON_Dict:
             return t.cast(
@@ -137,6 +137,79 @@ class D42Client(BasicRestClient):
             )
         )
 
+    def _get_object(
+        self,
+        endpoint: str,
+        id: int,
+        api_version: str = "1.0",
+    ) -> t.Any:
+        return self._request(endpoint=f"/api/{api_version}/{endpoint}/{id}")
+
+    def _post_object(
+        self,
+        new_obj: t.Mapping[str, t.Any],
+        endpoint: str,
+        api_version: str = "1.0",
+    ) -> tt.PostRes:
+        """
+        Generic POST.
+
+        The only thing that we really care about is the `Mapping[str, Any]`.
+        Strictly speaking, the mapping _should_ be:
+
+        `Dict[str, JSON_VALUES]`
+        where `JSON_Values = Union[str, int, float, bool, None]`
+
+        But **of course**, mypy complains about
+        [this](https://github.com/python/mypy/issues/4976).
+
+        `TypedDicts` aren't an acceptable generic dict, because of invariance
+        [nonsense](http://mypy.readthedocs.io/en/latest/common_issues.html#invariance-vs-covariance)
+        and `JSON_VALUES` can't be mapped to our `TypedDicts`, because of
+        `Literals`
+        """
+
+        return tt.PostRes(
+            *self._request(
+                endpoint=f"/api/{api_version}/{endpoint}/",
+                method="POST",
+                data=t.cast(t.Dict[str, t.Any], new_obj),
+            )
+        )
+
+    def _put_object(
+        self,
+        new_obj: t.Mapping[str, t.Any],
+        endpoint: str,
+        api_version: str = "1.0",
+    ) -> tt.PostRes:
+        """
+        Same as `_post_object` but uses the PUT method.
+        The difference is that PUT is used exclusively for updating, whereas
+        POST can be both update and create.
+        """
+        return tt.PostRes(
+            *self._request(
+                endpoint=f"/api/{api_version}/{endpoint}/",
+                method="PUT",
+                data=t.cast(t.Dict[str, t.Any], new_obj),
+            )
+        )
+
+    def _delete_object(
+        self, endpoint: str, id: int, api_version: str = "1.0"
+    ) -> tt.DeleteRes:
+        """
+        Generic DELETE
+        """
+        return t.cast(
+            tt.DeleteRes,
+            self._request(
+                endpoint=f"/api/{api_version}/{endpoint}/{id}",
+                method="DELETE",
+            ),
+        )
+
     def get_DOQL_query(self, query_name: str) -> t.Any:
         """
         DOQL queries are custom usermade queries that talk directly to
@@ -156,7 +229,7 @@ class D42Client(BasicRestClient):
         )
 
     def update_custom_field(
-        self, cf: tt.CustomFieldBase, endpoint: str
+        self, cf: tt.CustomFieldBase, endpoint: str, api_version: str = "1.0"
     ) -> tt.JSON_Res:
         """
         Update a custom field for a given d42 object.
@@ -199,12 +272,123 @@ class D42Client(BasicRestClient):
 
         return self._request(
             method="PUT",
-            endpoint=f"/api/1.0/custom_fields/{endpoint}/",
+            endpoint=f"/api/{api_version}/custom_fields/{endpoint}/",
             data=t.cast(t.Dict[str, t.Any], cf),
         )
 
-    def get_all_devices(self) -> t.Iterable[tt.JSON_Res]:
-        return self._flattened_paginated_request("/api/1.0/devices/")
+    ###########################################################################
+    #                                BUILDINGS                                #
+    ###########################################################################
+
+    def get_buildings(self, name: t.Optional[str]) -> t.Iterable[tt.Building]:
+        return self._flattened_paginated_request(
+            endpoint="/api/1.0/buildings/", params={"name": name}
+        )
+
+    def post_building(self, building: tt.Building) -> tt.PostRes:
+        return self._post_object(building, "buildings")
+
+    def delete_building(self, id: int) -> tt.DeleteRes:
+        return self._delete_object(endpoint="buildings", id=id)
+
+    ###########################################################################
+    #                                  ROOMS                                  #
+    ###########################################################################
+
+    def get_rooms(
+        self,
+        name: t.Optional[str],
+        building_id: t.Optional[str],
+        building: t.Optional[str],
+    ) -> t.Iterable[tt.Room]:
+        return self._flattened_paginated_request(
+            endpoint="/api/1.0/rooms/",
+            params={
+                "name": name,
+                "building_id": building_id,
+                "building": building,
+            },
+        )
+
+    def get_room(
+        self,
+        id: int,
+    ) -> tt.Room:
+        return t.cast(tt.Room, self._get_object(endpoint="rooms", id=id))
+
+    def post_room(self, room: tt.Room) -> tt.PostRes:
+        return self._post_object(room, "rooms")
+
+    def delete_room(self, id: int) -> tt.DeleteRes:
+        return self._delete_object(endpoint="rooms", id=id)
+
+    ###########################################################################
+    #                                  RACKS                                  #
+    ###########################################################################
+
+    def get_racks(self, **kwargs: tt.RackGet) -> t.Iterable[tt.Rack]:
+        return self._flattened_paginated_request(
+            endpoint="/api/1.0/racks/",
+            params=kwargs,
+        )
+
+    def get_rack(
+        self,
+        id: int,
+    ) -> tt.Rack:
+        return t.cast(tt.Rack, self._get_object(endpoint="racks", id=id))
+
+    def post_rack(self, rack: tt.Rack) -> tt.PostRes:
+        return self._post_object(rack, "racks")
+
+    def delete_rack(self, id: int) -> tt.DeleteRes:
+        return self._delete_object(endpoint="racks", id=id)
+
+    ###########################################################################
+    #                                 DEVICES                                 #
+    ###########################################################################
+
+    def get_devices(self, **kwargs: tt.DeviceGet) -> t.Iterable[tt.Device]:
+        return self._flattened_paginated_request(
+            "/api/1.0/devices/", params=kwargs
+        )
+
+    def get_all_devices(
+        self, include_cols: t.Optional[str] = None
+    ) -> t.Iterable[tt.Device]:
+        """
+        Apparently, get _all_ devices is a little more detailed than just
+        devices. Who knew.
+
+        Anyway, `include_cols` will limit the columns you want to display.
+
+        See the documentation for more info:
+        [here](https://api.device42.com/#!/Devices/getDevicesAll)
+        """
+        return self._flattened_paginated_request(
+            "/api/1.0/devices/all", params={"include_cols": include_cols}
+        )
+
+    def get_device(self, id: int, **kwargs: tt.DeviceGet) -> tt.Device:
+        return t.cast(tt.Device, self._get_object(endpoint="devices", id=id))
+
+    def get_device_by_other_id(
+        self,
+        id: int,
+        type: t.Literal["customer", "name", "serial", "asset"],
+        include_cols: str,
+    ) -> t.Iterable[tt.Device]:
+        """
+        You can find devices associated with some other objects id trivially
+        through this get
+        """
+        return self._flattened_paginated_request(
+            endpoint=f"devices/{type}/{id}"
+        )
+
+    ###########################################################################
+    #                                 OTHERS                                  #
+    ###########################################################################
 
     def get_all_service_instances(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/2.0/service_instances/")
@@ -214,38 +398,6 @@ class D42Client(BasicRestClient):
 
     def get_all_operating_systems(self) -> t.Iterable[tt.JSON_Res]:
         return self._flattened_paginated_request("/api/1.0/operatingsystems/")
-
-    ###########################################################################
-    #                                                                         #
-    #                              POST methods                               #
-    #                                                                         #
-    ###########################################################################
-
-    def _post_object(
-        self, new_obj: t.Mapping[str, t.Any], endpoint: str
-    ) -> tt.JSON_Res:
-        """
-        Generic POST.
-
-        The only thing that we really care about is the `Mapping[str, Any]`.
-        Strictly speaking, the mapping _should_ be:
-
-        `Dict[str, JSON_VALUES]`
-        where `JSON_Values = Union[str, int, float, bool, None]`
-
-        But **of course**, mypy complains about
-        [this](https://github.com/python/mypy/issues/4976).
-
-        `TypedDicts` aren't an acceptable generic dict, because of invariance
-        [nonsense](http://mypy.readthedocs.io/en/latest/common_issues.html#invariance-vs-covariance)
-        and `JSON_VALUES` can't be mapped to our `TypedDicts`, because of
-        `Literals`
-        """
-        return self._request(
-            endpoint=f"/api/1.0/{endpoint}/",
-            method="POST",
-            data=t.cast(t.Dict[str, t.Any], new_obj),
-        )
 
     def post_network(self, new_subnet: tt.Subnet) -> tt.JSON_Res:
         return self._post_object(new_subnet, "subnets")
