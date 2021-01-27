@@ -112,11 +112,11 @@ class D42Client(BasicRestClient):
         if not resp_data:
             # Sometimes, we'll run a paginated _request
             # and just get back []
-            # In these cases, we want to quickly StopIteration 
+            # In these cases, we want to quickly StopIteration
             return resp_data
 
         total_count = tt.int_cast(resp.get("total_count"))
-        
+
         yield resp_data
 
         processed = len(resp_data)
